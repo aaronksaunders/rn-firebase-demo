@@ -1,3 +1,4 @@
+//////
 import Firebase from 'firebase'
 
 import React, {
@@ -8,8 +9,7 @@ import React, {
     TouchableHighlight,
     Navigator,
     WebView,
-    Image,
-    TextInput
+    LinkingIOS
 } from 'react-native';
 
 
@@ -20,50 +20,33 @@ class LoginComponent extends Component {
 
         this.state = {}
 
-        // Fake that I have a browser window..
-        window.location = {
-            href: null
-        }
+        window.cordova = {}
 
+        window.open = this._windowOpen.bind(this)
+        window.close = this._windowClose.bind(this)
         _onShouldStartLoadWithRequest = this._onShouldStartLoadWithRequest.bind(this)
 
-    }
-
-    componentDidMount() {
-
-        // set this interval to check for me trying to redirect the window...
-        var that = this
-        that.inter = setInterval(function () {
-            if (window.location && window.location.split) {
-
-                // set the redirect on the url..
-                var newLocation = window.location.split("redirectTo=null")[0]
-                newLocation = newLocation + "redirectTo=https://auth.firebase.com/v2/clearlyinnovative-firebasestarterapp/auth/github/callback"
-
-                // open the browser...
-                that.setState({ url: newLocation })
-
-                // clear the interval to stop waiting for the location to be set..
-                clearInterval(that.inter)
-            }
-        }, 3000);
-
-
-        this.props.fbRef.onAuth((_auth) => {
+        this.props.fbRef.onAuth(function (_auth) {
             console.log(_auth)
-            this.setState({ auth: _auth })
         });
     }
 
-    /**
-     * 
-     */
-    _processTokenOrCode(_url) {
+    _windowOpen(_p1, _p2, _p3, _p4) {
+                
+        this.setState({ url: _p1.replace("true", "false") })
+        console.log(this.state.url)
+        return true
+    }
+
+
+    _windowClose( _url) {
 
         var code = _url.split("code=")[1].split("&")[0]
 
         console.log(_url)
-
+        console.log("code", code)
+        
+        this.setState({ url: null })
         fetch("https://github.com/login/oauth/access_token?",
             {
                 method: "POST",
@@ -90,7 +73,7 @@ class LoginComponent extends Component {
                         }
                     });
             })
-            .done(() => { this.setState({ url: null }) });
+            .done();
     }
 
 
@@ -98,11 +81,10 @@ class LoginComponent extends Component {
 
 
     /**
-    * login in the user with the credentials, gets the whole process 
-    * started, [NOTE] probably can just construct the url myself?
-    */
-    _doGitHubLogin() {
-        this.props.fbRef.authWithOAuthRedirect("github", function (error) {
+ * login in the user with the credentials
+ */
+    _doPressAction() {
+        this.props.fbRef.authWithOAuthPopup("github", function (error) {
             if (error) {
                 console.log("Authentication Failed!", error);
             } else {
@@ -114,7 +96,7 @@ class LoginComponent extends Component {
     /**
      * login in the user with the credentials
      */
-    _doEmailLogin() {
+    _REALdoPressAction() {
         console.log("in do press action")
 
         var that = this
@@ -169,7 +151,7 @@ class LoginComponent extends Component {
         // if so then close the window
         if (_event.url.indexOf("code=") !== -1) {
             console.log("_event.url", _event.url)
-            this._processTokenOrCode(_event.url)
+            window.close(_event.url)
             return true
         }
         return true
@@ -189,7 +171,7 @@ class LoginComponent extends Component {
                 javaScriptEnabled={true}
                 startInLoadingState={false}
                 getAuth
-                onShouldStartLoadWithRequest={this._onShouldStartLoadWithRequest.bind(this) }
+                onShouldStartLoadWithRequest={this._onShouldStartLoadWithRequest}
                 />
         )
     }
@@ -201,66 +183,19 @@ class LoginComponent extends Component {
                 alignItems: 'center',
                 flex: 1
             }}>
-                <Text style={{ color: 'black', }}>Git Hub Login Hack w/React Native</Text>
+                <Text style={{ color: 'black', }}>YOU NEED TO LOGIN</Text>
+                <Text style={{ color: 'black', }}>YOU NEED USERNAME</Text>
+                <Text style={{ color: 'black', }}>YOU NEED PASSWORD</Text>
                 <View>
                     <TouchableHighlight
                         style={LoginComponentStyles.button}
                         underlayColor='#99d9f4'
-                        onPress={() => { this._doGitHubLogin() } }>
+                        onPress={() => { this._doPressAction() } }>
                         <Text style={LoginComponentStyles.buttonText}>
-                            LOGIN WITH GITHUB
+                            LOGIN
                         </Text>
                     </TouchableHighlight>
                 </View>
-                <Text style={{ color: 'black', paddingTop: 20 }}>Email Login w/React Native</Text>
-
-                <View>
-                    <TextInput
-                        style={[LoginComponentStyles.inputField, { marginTop: 20 }]}
-                        onChangeText={(username) => this.setState({ username }) }
-                        value={this.state.username}
-                        />
-                    <TextInput
-                        style={[LoginComponentStyles.inputField]}
-                        onChangeText={(password) => this.setState({ password }) }
-                        password ={ true }
-                        value={this.state.password}
-                        />
-                </View>
-                <View>
-                    <TouchableHighlight
-                        style={LoginComponentStyles.button}
-                        underlayColor='#99d9f4'
-                        onPress={() => { this._doEmailLogin() } }>
-                        <Text style={LoginComponentStyles.buttonText}>
-                            LOGIN WITH EMAIL
-                        </Text>
-                    </TouchableHighlight>
-                </View>
-            </View>
-        )
-    }
-
-    _renderLoggedInView() {
-        return (
-            <View ref="loggedInView" style={{
-                justifyContent: 'center',
-                alignItems: 'center',
-                flex: 1
-            }}>
-                <Text style={{ color: 'black', }}>
-                    {this.state.auth && this.state.auth.uid}
-                </Text>
-                <Text style={{ color: 'black', }}>
-                    {this.state.auth && (this.state.auth.auth.token.name || this.state.auth.auth.token.email) }
-                </Text>
-                <Image
-                    style={{
-                        width: 75,
-                        height: 75,
-                    }}
-                    source={{ uri: (this.state.auth.github || this.state.auth.password).profileImageURL }}
-                    />
             </View>
         )
     }
@@ -269,33 +204,23 @@ class LoginComponent extends Component {
         if (this.state.url) {
             return this._renderWebView()
         } else {
-            if (!this.state.auth) {
-                return this._renderLoginView()
-            } else {
-                return this._renderLoggedInView()
-            }
+
+            return this._renderLoginView()
         }
     }
 }
 
+
 const LoginComponentStyles = StyleSheet.create({
-    inputField: { height: 28, borderColor: 'gray', borderWidth: .5, width: 200, marginTop: 5, paddingLeft: 4, paddingRight: 4 },
     buttonText: {
         fontSize: 12,
         color: 'white',
         alignSelf: 'center'
     },
-    plainText: {
-        fontSize: 12,
-        color: 'black',
-        alignSelf: 'center'
-    },
     button: {
         marginTop: 10,
         height: 32,
-        paddingLeft: 10,
-        paddingRight: 10,
-        // width: 60,
+        width: 60,
         flex: 1,
         flexDirection: 'row',
         backgroundColor: '#48BBEC',
@@ -309,5 +234,3 @@ const LoginComponentStyles = StyleSheet.create({
 });
 
 module.exports = LoginComponent;
-
-
