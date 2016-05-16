@@ -1,5 +1,7 @@
 React Native Firebase GitHub Hack
 -
+######This is a hack, I know it is a hack, but I was just curious if it could be done. If anyone know where the non-minified code is for the library, I believe I can help with getting this to work properly. I believe the same model that is used to integrate AngularFire with cordova inappbrowser can be used here also.
+-
 So what I have done is use the `WebView` to go through the OAuth process since I was unable to get the AngularFire library to handle it themselves.
 
 So we use Firebase to get the process started.
@@ -90,7 +92,7 @@ _onShouldStartLoadWithRequest(_event) {
     return true
 }
 ```
-Now that we have a code, we need to get the `access_token` from github and pass it back to firebase
+Now that we have a code, we need to get the `access_token` from github and pass it back to firebase calling the `authWithOAuthToken` function which if successful will return the auth data.
 ```Javascript
 _processTokenOrCode(_url) {
 
