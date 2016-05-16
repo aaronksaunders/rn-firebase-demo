@@ -19,6 +19,7 @@ class LoginComponent extends Component {
         super(props)
 
         this.state = {}
+        this.props = {}
 
         // Fake that I have a browser window..
         window.location = {
@@ -56,7 +57,7 @@ class LoginComponent extends Component {
     }
 
     /**
-     * 
+     * work with the token returned to attempt to login into GitHub
      */
     _processTokenOrCode(_url) {
 
@@ -81,6 +82,7 @@ class LoginComponent extends Component {
             .then((responseData) => {
                 console.log(responseData)
 
+                // login to Firebase using the credential returned from GitHub
                 this.props.fbRef.authWithOAuthToken("github", responseData.access_token,
                     function (error, authData) {
                         if (error) {
@@ -90,6 +92,8 @@ class LoginComponent extends Component {
                         }
                     });
             })
+            // when don clear the url so the component can render the proper
+            // login state UI
             .done(() => { this.setState({ url: null }) });
     }
 
@@ -109,6 +113,10 @@ class LoginComponent extends Component {
                 console.log("Authenticated successfully with payload:", authData);
             }
         });
+    }
+
+    _gotoHomeScreen() {
+        this.props.loginSuccess();
     }
 
     /**
@@ -136,11 +144,6 @@ class LoginComponent extends Component {
                     } else {
                         console.log("user does not exists... ")
                     }
-
-                    // call function passed in to let the parent know 
-                    // we have successfully logged in so start listening 
-                    // for  data
-                    that.props.loginSuccess();
                 }, function (_error) {
                     console.log("user does not exists... " + _error.message)
                     that.props.loginSuccess();
@@ -152,14 +155,7 @@ class LoginComponent extends Component {
     }
 
     onNavigationStateChange(navState) {
-        this.setState({
-            backButtonEnabled: navState.canGoBack,
-            forwardButtonEnabled: navState.canGoForward,
-            url: navState.url,
-            status: navState.title,
-            loading: navState.loading,
-            scalesPageToFit: true
-        });
+
     }
 
 
@@ -217,14 +213,14 @@ class LoginComponent extends Component {
                 <View>
                     <TextInput
                         style={[LoginComponentStyles.inputField, { marginTop: 20 }]}
-                        onChangeText={(username) => this.setState({ username }) }
-                        value={this.state.username}
+                        onChangeText={(username) => this.props.username = username }
+                        value={this.props.username}
                         />
                     <TextInput
                         style={[LoginComponentStyles.inputField]}
-                        onChangeText={(password) => this.setState({ password }) }
+                        onChangeText={(password) => this.props.password = password }
                         password ={ true }
-                        value={this.state.password}
+                        value={this.props.password}
                         />
                 </View>
                 <View>
@@ -261,14 +257,27 @@ class LoginComponent extends Component {
                     }}
                     source={{ uri: (this.state.auth.github || this.state.auth.password).profileImageURL }}
                     />
+                <View>
+                    <TouchableHighlight
+                        style={LoginComponentStyles.button}
+                        underlayColor='#99d9f4'
+                        onPress={() => { this._gotoHomeScreen() } }>
+                        <Text style={LoginComponentStyles.buttonText}>
+                            GO TO HOME SCREEN
+                        </Text>
+                    </TouchableHighlight>
+                </View>
             </View>
         )
     }
     render() {
 
+        // if there is a url then show the webView which should
+        // contain the GitHub website Authentication UI
         if (this.state.url) {
             return this._renderWebView()
         } else {
+            // otherwise show the appropriate state related UI
             if (!this.state.auth) {
                 return this._renderLoginView()
             } else {
