@@ -1,7 +1,9 @@
 import Firebase from 'firebase'
 
-import React, {
-    Component,
+
+import React, { Component } from 'react';
+
+import {
     StyleSheet,
     Text,
     View,
@@ -122,6 +124,9 @@ class LoginComponent extends Component {
     /**
      * login in the user with the credentials
      */
+<<<<<<< HEAD
+    _doPressAction() {
+=======
     _doEmailLogin() {
         console.log("in do press action")
 
@@ -149,8 +154,13 @@ class LoginComponent extends Component {
                     that.props.loginSuccess();
                 });
 
+>>>>>>> 3dcd4b70f41c2c4fee2e863ddbae4fab96465efd
 
-            }
+        firebase.auth().signInWithEmailAndPassword('aaronksaunders@mail.com', 'password').catch(function (error) {
+            // Handle Errors here.
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            console.log(errorMessage)
         });
     }
 
