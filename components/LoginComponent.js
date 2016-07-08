@@ -1,7 +1,9 @@
 import Firebase from 'firebase'
 
-import React, {
-    Component,
+
+import React, { Component } from 'react';
+
+import {
     StyleSheet,
     Text,
     View,
@@ -16,39 +18,12 @@ class LoginComponent extends Component {
      * login in the user with the credentials
      */
     _doPressAction() {
-        console.log("in do press action")
 
-        var that = this
-
-        this.props.fbRef.authWithPassword({
-            email: 'd@mail.com',
-            password: 'password'
-        }, function authHandler(error, authData) {
-            if (error) {
-                console.log("Login Failed!", error);
-            } else {
-
-                // check to see if user exists, here is 
-                // where you will add user to firebase
-                var usersRef = that.props.fbRef.child('users/' + authData.uid)
-                usersRef.once('value', function (snapshot) {
-                    if (snapshot.hasChild("displayName")) {
-                        console.log("user exists...")
-                    } else {
-                        console.log("user does not exists... ")
-                    }
-
-                    // call function passed in to let the parent know 
-                    // we have successfully logged in so start listening 
-                    // for  data
-                    that.props.loginSuccess();
-                }, function (_error) {
-                    console.log("user does not exists... " + _error.message)
-                    that.props.loginSuccess();
-                });
-
-
-            }
+        firebase.auth().signInWithEmailAndPassword('aaronksaunders@mail.com', 'password').catch(function (error) {
+            // Handle Errors here.
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            console.log(errorMessage)
         });
     }
 

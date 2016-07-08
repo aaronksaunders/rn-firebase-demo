@@ -3,99 +3,89 @@
  * https://github.com/facebook/react-native
  * @flow
  */
-'use strict';
 
-import Firebase from 'firebase'
-import ListComponent from './components/ListComponent'
-import LoginComponent from './components/LoginComponent'
+const firebase = require("firebase");
 
-import React, {
+import React, { Component } from 'react';
+import {
   AppRegistry,
-  Component,
+  StyleSheet,
   Text,
   View,
-  TouchableHighlight,
   Navigator,
-  StyleSheet
+  TouchableHighlight
 } from 'react-native';
 
+import LoginComponent from './components/LoginComponent'
 
-const FirebaseUrl = 'https://clearlyinnovative-firebasestarterapp.firebaseio.com/';
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBb0yc3UWwQPy_dvkcRLThNfQZuNx9jZ-g",
+  authDomain: "fir-starterapp.firebaseapp.com",
+  databaseURL: "https://fir-starterapp.firebaseio.com",
+  storageBucket: "fir-starterapp.appspot.com",
+};
+const firebaseApp = firebase.initializeApp(firebaseConfig);
 
-class firebaseReactApp extends Component {
+
+
+class AwesomeProjectnew extends Component {
 
   constructor(props) {
     super(props);
-    this.itemsRef = this.getRef().child('textItems');
+
+    console.log("constructor run...");
+
     this.state = {
       loggedIn: false,
-      itemsRef: this.itemsRef,
       items: []
     };
-  }
 
-  /**
-   * 
-   */
-  getRef() {
-    return new Firebase(FirebaseUrl);
-  }
-  /**
-   * 
-   */
-  handleLogout() {
-
-    // logout of firebase
-    this.getRef().unauth();
-
-    // set the state appropriately
-    this.setState({
-      loggedIn: false,
-      items: []
-    });
-  }
-  /**
-   * 
-   */
-  listenForItems(itemsRef) {
-
-    this.setState({ 'loggedIn': true })
-
-    this.itemsRef.on('value', (snap) => {
-
-      // get children as an array
-      var items = [];
-      snap.forEach((child) => {
-        items.push({
-          title: child.val().title,
-          timestamp: child.val().timestamp,
-          description: child.val().description,
-          _key: child.key()
-        });
-      });
-
-      this.setState({
-        items: items
-      });
-
-    });
   }
 
   /**
    * 
    */
   componentDidMount() {
-    var that = this
-    // Register the callback to be fired every time auth state changes
-    this.getRef().onAuth(function authDataCallback(authData) {
-      if (authData) {
-        console.log("User " + authData.uid + " is logged in with " + authData.provider);
+
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        // User is signed in.
+        this.setState({
+          loggedIn: true,
+          items: []
+        });
+        console.log("got user..");
       } else {
-        console.log("User is logged out");
+        // No user is signed in.
+        console.log("no user..");
+        this.setState({
+          loggedIn: false,
+          items: []
+        });
       }
     });
+
   }
 
+
+  /**
+   * login in the user with the credentials
+   */
+  _doPressAction() {
+
+    var that = this;
+    firebase.auth().signOut().then(function () {
+      // Sign-out successful.
+      // User is signed in.
+      that.setState({
+        loggedIn: false,
+        items: []
+      });
+    }, function (error) {
+      // An error happened.
+    });
+  }
 
   render() {
     if (this.state.loggedIn === false) {
@@ -114,26 +104,76 @@ class firebaseReactApp extends Component {
           renderScene = {(route, navigator) => {
             return <route.component route={route}
               navigator={navigator}
-              fbRef={ this.getRef() }
+              fbRef={ firebase }
               loginSuccess={() => {
-                this.listenForItems(this.getRef())
+                this.listenForItems(firebase)
               } }/>;
           } }
           />
       )
     } else {
       return (
-        <View style={{ backgroundColor: '#F5FCFF', flex: 1 }}>
-          <ListComponent
-            ref="listComponent"
-            items={this.state.items}
-            itemsRef={this.state.itemsRef}
-            logoutAction = {() => { this.handleLogout() } }>
-          </ListComponent>
+        <View style={styles.container}>
+          <Text style={styles.welcome}>
+            Welcome to React Native!
+          </Text>
+          <Text style={styles.instructions}>
+            To get started, edit index.ios.js
+          </Text>
+          <View>
+            <TouchableHighlight
+              style={styles.button}
+              underlayColor='#99d9f4'
+              onPress={() => { this._doPressAction() } }>
+              <Text style={styles.buttonText}>
+                LOGOUT
+              </Text>
+            </TouchableHighlight>
+          </View>
         </View>
-      )
+      );
     }
+
   }
 }
 
-AppRegistry.registerComponent('firebaseReactApp', () => firebaseReactApp);
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
+  },
+  welcome: {
+    fontSize: 20,
+    textAlign: 'center',
+    margin: 10,
+  },
+  instructions: {
+    textAlign: 'center',
+    color: '#333333',
+    marginBottom: 5,
+  },
+
+  buttonText: {
+    fontSize: 12,
+    color: 'white',
+    alignSelf: 'center'
+  },
+  button: {
+    marginTop: 10,
+    height: 32,
+    width: 60,
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#48BBEC',
+    borderColor: '#48BBEC',
+    borderWidth: 1,
+    borderRadius: 2,
+    marginBottom: 10,
+    alignSelf: 'stretch',
+    justifyContent: 'center'
+  }
+});
+
+AppRegistry.registerComponent('AwesomeProjectnew', () => AwesomeProjectnew);

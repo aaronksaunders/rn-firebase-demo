@@ -1,17 +1,18 @@
 /**
  * Sample React Native App
  * https://github.com/facebook/react-native
+ * @flow
  */
 
-import React, {
+import React, { Component } from 'react';
+import {
   AppRegistry,
-  Component,
   StyleSheet,
   Text,
   View
 } from 'react-native';
 
-class firebaseReactApp extends Component {
+class AwesomeProjectnew extends Component {
   render() {
     return (
       <View style={styles.container}>
@@ -48,4 +49,4 @@ const styles = StyleSheet.create({
   },
 });
 
-AppRegistry.registerComponent('firebaseReactApp', () => firebaseReactApp);
+AppRegistry.registerComponent('AwesomeProjectnew', () => AwesomeProjectnew);
