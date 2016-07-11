@@ -17,6 +17,8 @@ import {
 } from 'react-native';
 
 import LoginComponent from './components/LoginComponent'
+import MyListViewComponent from './components/MyListViewComponent'
+import NavigationBar from 'react-native-navbar';
 
 // Initialize Firebase
 const firebaseConfig = {
@@ -37,8 +39,8 @@ class AwesomeProjectnew extends Component {
     console.log("constructor run...");
 
     this.state = {
-      loggedIn: false,
-      items: []
+      'loggedIn': false,
+      'items': []
     };
 
   }
@@ -48,21 +50,18 @@ class AwesomeProjectnew extends Component {
    */
   componentDidMount() {
 
+    console.log("componentDidMount run...");
+    var that = this
+
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         // User is signed in.
-        this.setState({
-          loggedIn: true,
-          items: []
-        });
+        that.setState({ 'loggedIn': true });
         console.log("got user..");
       } else {
         // No user is signed in.
         console.log("no user..");
-        this.setState({
-          loggedIn: false,
-          items: []
-        });
+        that.setState({ 'loggedIn': false });
       }
     });
 
@@ -103,38 +102,52 @@ class AwesomeProjectnew extends Component {
           } }
           renderScene = {(route, navigator) => {
             return <route.component route={route}
-              navigator={navigator}
-              fbRef={ firebase }
-              loginSuccess={() => {
-                this.listenForItems(firebase)
-              } }/>;
+              navigator={navigator} />;
           } }
           />
       )
-    } else {
+    } else if (true) {
       return (
-        <View style={styles.container}>
-          <Text style={styles.welcome}>
-            Welcome to React Native!
-          </Text>
-          <Text style={styles.instructions}>
-            To get started, edit index.ios.js
-          </Text>
-          <View>
-            <TouchableHighlight
-              style={styles.button}
-              underlayColor='#99d9f4'
-              onPress={() => { this._doPressAction() } }>
-              <Text style={styles.buttonText}>
-                LOGOUT
-              </Text>
-            </TouchableHighlight>
-          </View>
-        </View>
-      );
+        <Navigator
+          style={{
+            flex: 1
+          }}
+          initialRoute={{
+            title: 'MyListViewComponent',
+            component: MyListViewComponent,
+          }}
+          configureScene = {() => {
+            return Navigator.SceneConfigs.FloatFromRight;
+          } }
+          renderScene = {(route, navigator) => {
+            return <route.component route={route}
+              navigator={navigator}
+              items={ this.state.items }/>;
+          } }
+          />)
     }
-
+    // return (
+    //   <View style={styles.container}>
+    //     <Text style={styles.welcome}>
+    //       Welcome to React Native!
+    //     </Text>
+    //     <Text style={styles.instructions}>
+    //       To get started, edit index.ios.js
+    //     </Text>
+    //     <View>
+    //       <TouchableHighlight
+    //         style={styles.button}
+    //         underlayColor='#99d9f4'
+    //         onPress={() => { this._doPressAction() } }>
+    //         <Text style={styles.buttonText}>
+    //           LOGOUT
+    //         </Text>
+    //       </TouchableHighlight>
+    //     </View>
+    //   </View>
+    // );
   }
+
 }
 
 const styles = StyleSheet.create({
